@@ -1,0 +1,38 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: biblioteca_db_dev
+    environment:
+      POSTGRES_USER:     biblioteca
+      POSTGRES_PASSWORD: biblioteca
+      POSTGRES_DB:       biblioteca
+    volumes:
+      - pg_data_dev:/var/lib/postgresql/data   
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql  
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biblioteca"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: biblioteca_app_dev
+    environment:
+      DATABASE_URL: postgresql://biblioteca:biblioteca@db:5432/biblioteca
+      DEBUG: "true"
+    volumes:
+      - .:/app  
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pg_data_dev:
