@@ -28,6 +28,7 @@ def cadastrar_livro(livro: LivroCreate, db: Session = Depends(get_db)):
     db.add(novo)
     db.commit()
     db.refresh(novo)
+    db.refresh(livro)
     return novo
 
 
